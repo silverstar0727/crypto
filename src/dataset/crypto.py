@@ -1,0 +1,122 @@
+from typing import Union
+
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.preprocessing import MinMaxScaler
+from torch.utils.data import Subset, DataLoader, Dataset
+import pandas as pd
+import datetime
+import torch
+
+import lightning as L
+from lightning.pytorch.utilities.types import TRAIN_DATALOADERS, EVAL_DATALOADERS
+
+from transforms.base import BaseTransforms
+
+class CryptoDataset(Dataset):
+    def __init__(self, df, mode="train", window_size=30) -> None:
+        super().__init__()
+        self.df = df
+        self.window_size = window_size
+
+    def __len__(self):
+        return len(self.df) - 2
+
+    def __getitem__(self, index):
+        x = self.df.iloc[index: index + self.window_size].values
+        y = self.df.iloc[index + self.window_size][["open", "high", "low", "close"]].values
+
+        x = torch.Tensor(x)
+        y = torch.Tensor(y)
+        return x, y
+
+
+def preprocessing_df(df): 
+    # drop null values
+    df = df.dropna()
+    df = df.reset_index(drop=True)
+
+    # apply strptime
+    df["timestamp"] = df["timestamp"].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+
+    # prev = None
+    # discrete_ids = []
+    # for idx, date in enumerate(df["timestamp"]):
+    #     if prev is None:
+    #         prev = date
+    #         continue
+
+    #     if (prev - date) != datetime.timedelta(minutes=1):
+    #         discrete_ids.append(idx)
+
+    #     prev = date
+
+    # df = df.drop(index=discrete_ids)
+    df = df.reset_index(drop=True)
+    df = df.drop(columns=["timestamp"])
+
+    df_len = len(df)
+    test_size = 0.2
+    cut_idx = df_len - int(df_len*test_size)
+    train, val = df.iloc[:cut_idx], df.iloc[cut_idx:]
+    
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    train = train.copy()
+    train[train.columns] = scaler.fit_transform(train[train.columns])
+    val = val.copy()
+    val[val.columns] = scaler.transform(val[val.columns])
+
+    return train, val
+
+class CryptoDataModule(L.LightningDataModule):
+    def __init__(
+        self,
+        csv_path: str,
+        batch_size: int,
+        val_split: Union[int, float],
+    ) -> None:
+        super().__init__()
+        self.csv_path = csv_path
+        self.val_split = val_split
+        self.batch_size = batch_size
+
+    def prepare_data(self) -> None:
+        self.df = pd.read_csv(self.csv_path)
+        self.train_df, self.val_df = preprocessing_df(df=self.df)
+
+    def setup(self, stage: str) -> None:
+        # self.train_dataset = CryptoDataset(self.df, mode="train")
+        # self.val_dataset = CryptoDataset(self.df, mode="val")
+        # self.test_dataset = CIFAR10(
+        #     self.root, train=False, download=True, transform=self.test_transform
+        # )
+
+        # indices = list(range(len(self.train_dataset)))
+        # targets = list(self.train_dataset.targets)
+
+        # sss = StratifiedShuffleSplit(
+        #     n_splits=1, test_size=self.val_split, random_state=0
+        # )
+
+        # train_indices, val_indices = next(sss.split(indices, targets))
+
+
+        # self.train_dataset = Subset(self.train_dataset, train_indices)
+        # self.val_dataset = Subset(self.val_dataset, val_indices)
+
+        self.train_dataset = CryptoDataset(self.train_df, mode="train")
+        self.val_dataset = CryptoDataset(self.val_df, mode="val")
+
+    def train_dataloader(self) -> TRAIN_DATALOADERS:
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
+        )
+
+    def val_dataloader(self) -> EVAL_DATALOADERS:
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4
+        )
+
+    # def test_dataloader(self) -> EVAL_DATALOADERS:
+    #     return DataLoader(
+    #         self.test_dataset, batch_size=100, shuffle=False, num_workers=4
+    #     )

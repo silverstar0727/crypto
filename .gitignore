@@ -1,0 +1,27 @@
+# vscode settings
+.vscode
+venv
+
+# pyenv version
+.python-version
+
+# data files
+data
+*.csv
+
+# outputs
+artifacts
+outputs
+wandb
+lightning_logs
+logs
+
+
+# pycache
+__pycache__
+
+# dummy files
+playground.py
+
+# docker
+Dockerfile
