@@ -30,20 +30,21 @@ class CryptoDataset(Dataset):
         return x, y
 
 
-def preprocessing_df(df): 
+def preprocessing_df(df, val_split): 
     # drop null values
     df = df.dropna()
     df = df.reset_index(drop=True)
 
     # apply strptime
-    df["timestamp"] = df["timestamp"].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+    df["timestamp"] = df["timestamp"].apply(
+        lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+    )
 
     df = df.reset_index(drop=True)
     df = df.drop(columns=["timestamp"])
 
     df_len = len(df)
-    test_size = 0.2
-    cut_idx = int(df_len*test_size)
+    cut_idx = int(df_len*val_split)
     train, val = df.iloc[cut_idx:], df.iloc[:cut_idx]
     
     scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -68,28 +69,9 @@ class CryptoDataModule(L.LightningDataModule):
 
     def prepare_data(self) -> None:
         self.df = pd.read_csv(self.csv_path)
-        self.train_df, self.val_df = preprocessing_df(df=self.df)
+        self.train_df, self.val_df = preprocessing_df(df=self.df, val_split=self.val_split)
 
     def setup(self, stage: str) -> None:
-        # self.train_dataset = CryptoDataset(self.df, mode="train")
-        # self.val_dataset = CryptoDataset(self.df, mode="val")
-        # self.test_dataset = CIFAR10(
-        #     self.root, train=False, download=True, transform=self.test_transform
-        # )
-
-        # indices = list(range(len(self.train_dataset)))
-        # targets = list(self.train_dataset.targets)
-
-        # sss = StratifiedShuffleSplit(
-        #     n_splits=1, test_size=self.val_split, random_state=0
-        # )
-
-        # train_indices, val_indices = next(sss.split(indices, targets))
-
-
-        # self.train_dataset = Subset(self.train_dataset, train_indices)
-        # self.val_dataset = Subset(self.val_dataset, val_indices)
-
         self.train_dataset = CryptoDataset(self.train_df, mode="train")
         self.val_dataset = CryptoDataset(self.val_df, mode="val")
 

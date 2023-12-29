@@ -1,7 +1,7 @@
 # lightning.pytorch==2.0.0
 # name: dev-refactor-wnb
 name: crypto
-version: v39
+version: v40
 
 seed_everything: 42
 trainer:

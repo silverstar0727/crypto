@@ -15,6 +15,7 @@ outputs
 wandb
 lightning_logs
 logs
+*.out
 
 
 # pycache
