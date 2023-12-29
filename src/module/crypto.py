@@ -25,7 +25,6 @@ class LitCrypto(L.LightningModule):
         return self.net(x)
 
     def training_step(self, batch, batch_idx):
-        print(x.shape, y.shape)
         x, y = batch
         pred = self(x)
 

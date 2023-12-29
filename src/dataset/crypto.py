@@ -19,7 +19,7 @@ class CryptoDataset(Dataset):
         self.window_size = window_size
 
     def __len__(self):
-        return len(self.df) - 2
+        return len(self.df) - self.window_size - 2
 
     def __getitem__(self, index):
         x = self.df.iloc[index: index + self.window_size].values
@@ -38,26 +38,13 @@ def preprocessing_df(df):
     # apply strptime
     df["timestamp"] = df["timestamp"].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
 
-    # prev = None
-    # discrete_ids = []
-    # for idx, date in enumerate(df["timestamp"]):
-    #     if prev is None:
-    #         prev = date
-    #         continue
-
-    #     if (prev - date) != datetime.timedelta(minutes=1):
-    #         discrete_ids.append(idx)
-
-    #     prev = date
-
-    # df = df.drop(index=discrete_ids)
     df = df.reset_index(drop=True)
     df = df.drop(columns=["timestamp"])
 
     df_len = len(df)
     test_size = 0.2
-    cut_idx = df_len - int(df_len*test_size)
-    train, val = df.iloc[:cut_idx], df.iloc[cut_idx:]
+    cut_idx = int(df_len*test_size)
+    train, val = df.iloc[cut_idx:], df.iloc[:cut_idx]
     
     scaler = MinMaxScaler(feature_range=(-1, 1))
     train = train.copy()

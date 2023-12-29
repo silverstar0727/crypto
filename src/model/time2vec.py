@@ -42,43 +42,28 @@ class CosineActivation(nn.Module):
 class Time2Vec(nn.Module):
     def __init__(self, input_size, activation, hidden_dim, out_dim, batch_size, lstm_hidden_dim, lstm_layer):
         super(Time2Vec, self).__init__()
-        # self.batch_size = batch_size
-        # self.lstm_hidden_dim = lstm_hidden_dim
-        # self.lstm_layer = lstm_layer
+        self.batch_size = batch_size
+        self.lstm_hidden_dim = lstm_hidden_dim
+        self.lstm_layer = lstm_layer
 
-        # if activation == "sin":
-        #     self.tsv = SineActivation(input_size, hidden_dim)
-        # elif activation == "cos":
-        #     self.tsv = CosineActivation(input_size, hidden_dim)
+        if activation == "sin":
+            self.tsv = SineActivation(input_size, hidden_dim)
+        elif activation == "cos":
+            self.tsv = CosineActivation(input_size, hidden_dim)
         
-        # self.lstm = torch.nn.LSTM(
-        #     input_size=hidden_dim, 
-        #     hidden_size=lstm_hidden_dim, 
-        #     num_layers=self.lstm_layer, 
-        #     batch_first=True,
-        #     bidirectional=False
-        # )
-        self.lstm = nn.LSTM(input_size=200, hidden_size=20, num_layers=1, bidirectional=False, batch_first=True)
+        self.lstm = torch.nn.LSTM(
+            input_size=hidden_dim, 
+            hidden_size=lstm_hidden_dim, 
+            num_layers=self.lstm_layer, 
+            batch_first=True,
+            bidirectional=False
+        )
         self.out_layer = nn.Linear(lstm_hidden_dim, out_dim)
-
-        # self.fc1 = nn.Linear(hidden_dim, out_dim)
     
     def forward(self, x):
-        print("x shape", x.shape)
-        # h_0 = torch.zeros(self.lstm_layer, self.batch_size, self.lstm_hidden_dim)
-        # c_0 = torch.zeros(self.lstm_layer, self.batch_size, self.lstm_hidden_dim)
-        # print("h_0, c_0", h_0.shape, c_0.shape)
-
-        x = torch.zeros(32, 30, 200)
-        print("tsv shape", x.shape)
+        x = self.tsv(x) # (b, w, h)
         output, (final_hidden_state, final_cell_state) = self.lstm(x)
-
-        # x = self.tsv(x) # (b, w, h)
-        # # x = x.permute(1, 0, 2)
-        # print("tsv shape", x.shape)
-        # output, (final_hidden_state, final_cell_state) = self.lstm(x)
-        # print("lstm shape", output.shape)
+        output = output[:,-1,:]
         x = self.out_layer(output)
-        print("out shape", x.shape)
 
         return x

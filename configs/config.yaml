@@ -1,12 +1,12 @@
 # lightning.pytorch==2.0.0
 # name: dev-refactor-wnb
 name: crypto
-version: v34
+version: v39
 
 seed_everything: 42
 trainer:
   accelerator: cpu
-  precision: 16-mixed
+  # precision: 16-mixed
   max_epochs: 200
   plugins:
     - AsyncCheckpointIO
