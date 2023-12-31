@@ -23,7 +23,8 @@ class CryptoDataset(Dataset):
 
     def __getitem__(self, index):
         x = self.df.iloc[index: index + self.window_size].values
-        y = self.df.iloc[index + self.window_size][["open", "high", "low", "close"]].values
+        target_cols = ["close"]
+        y = self.df.iloc[index + self.window_size][target_cols].values
 
         x = torch.Tensor(x)
         y = torch.Tensor(y)

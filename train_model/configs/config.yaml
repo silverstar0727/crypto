@@ -1,7 +1,7 @@
 # lightning.pytorch==2.0.0
 # name: dev-refactor-wnb
 name: crypto
-version: v40
+version: close-pred-2
 
 seed_everything: 42
 trainer:
@@ -20,7 +20,7 @@ model:
         input_size: 9
         activation: sin
         hidden_dim: 200
-        out_dim: 4
+        out_dim: 1
         batch_size: ${data.init_args.batch_size}
         lstm_hidden_dim: 20
         lstm_layer: 1

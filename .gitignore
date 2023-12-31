@@ -16,7 +16,7 @@ wandb
 lightning_logs
 logs
 *.out
-
+*.ckpt
 
 # pycache
 __pycache__
