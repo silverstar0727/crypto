@@ -1,12 +1,12 @@
 # lightning.pytorch==2.0.0
 # name: dev-refactor-wnb
 name: crypto
-version: close-pred-2
+version: close-pred-5
 
 seed_everything: 42
 trainer:
-  accelerator: cpu
-  # precision: 16-mixed
+  accelerator: gpu
+  precision: 16-mixed
   max_epochs: 200
   plugins:
     - AsyncCheckpointIO
@@ -32,7 +32,7 @@ data:
   class_path: CryptoDataModule
   init_args:
     csv_path: data/bitcoin_2017_to_2023.csv
-    batch_size: 32
+    batch_size: 4096
     val_split: 0.2
 
 optimizer:

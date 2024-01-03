@@ -78,7 +78,7 @@ class CryptoDataModule(L.LightningDataModule):
 
     def train_dataloader(self) -> TRAIN_DATALOADERS:
         return DataLoader(
-            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
+            self.train_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4
         )
 
     def val_dataloader(self) -> EVAL_DATALOADERS:
