@@ -26,3 +26,5 @@ playground.py
 
 # docker
 Dockerfile
+
+*.hdf5
